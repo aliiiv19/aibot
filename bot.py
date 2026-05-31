@@ -1,21 +1,15 @@
 import os
-import httpx
-from dotenv import load_dotenv
 from google import genai
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 
-# Загружаем ключи из .env
-load_dotenv()
-
-# Отключаем системный прокси чтобы не мешал
-os.environ.pop("ALL_PROXY", None)
-os.environ.pop("all_proxy", None)
-os.environ.pop("HTTPS_PROXY", None)
-os.environ.pop("HTTP_PROXY", None)
+# На Railway переменные читаются напрямую из системы
+# load_dotenv() не нужен — он только для локального запуска
+BOT_TOKEN = os.environ["BOT_TOKEN"]
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
 # Подключаемся к Gemini
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # История чатов
 chats = {}
@@ -37,7 +31,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if chat_id not in chats:
         chats[chat_id] = []
 
-    # Добавляем сообщение пользователя в историю
     chats[chat_id].append({"role": "user", "parts": [{"text": user_text}]})
 
     await context.bot.send_chat_action(chat_id=chat_id, action="typing")
@@ -48,8 +41,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             contents=chats[chat_id],
         )
         reply = response.text
-
-        # Сохраняем ответ в историю
         chats[chat_id].append({"role": "model", "parts": [{"text": reply}]})
 
     except Exception as e:
@@ -60,18 +51,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
-    # Создаём бота без системного прокси
-    app = (
-        ApplicationBuilder()
-        .token(os.environ["BOT_TOKEN"])
-        .proxy(None)
-        .get_updates_proxy(None)
-        .build()
-    )
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("reset", reset))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("Бот запущен! Нажми Ctrl+C чтобы остановить.")
+    print("Бот запущен!")
     app.run_polling()
 
 
