@@ -1,4 +1,5 @@
 import os
+import asyncio
 from groq import Groq
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
@@ -42,7 +43,16 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chats.pop(update.effective_chat.id, None)
-    await update.message.reply_text("История очищена! Начинаем с чистого листа.")
+    modes.pop(update.effective_chat.id, None)
+    # Удаляем сообщение пользователя с командой /reset
+    await update.message.delete()
+    # Отправляем уведомление и удаляем его через 3 секунды
+    msg = await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="✅ История очищена!"
+    )
+    await asyncio.sleep(3)
+    await msg.delete()
 
 
 async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
