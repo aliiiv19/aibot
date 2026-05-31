@@ -5,8 +5,16 @@ from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, fil
 
 # На Railway переменные читаются напрямую из системы
 # load_dotenv() не нужен — он только для локального запуска
-BOT_TOKEN = os.environ["BOT_TOKEN"]
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
+print(f"BOT_TOKEN длина: {len(BOT_TOKEN)}")
+print(f"GEMINI_API_KEY длина: {len(GEMINI_API_KEY)}")
+
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN не найден!")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY не найден!")
 
 # Подключаемся к Gemini
 client = genai.Client(api_key=GEMINI_API_KEY)
