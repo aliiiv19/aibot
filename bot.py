@@ -6,9 +6,6 @@ from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, fil
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip().strip('"').strip("'")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip().strip('"').strip("'")
 
-print(f"BOT_TOKEN длина: {len(BOT_TOKEN)}")
-print(f"GEMINI_API_KEY длина: {len(GEMINI_API_KEY)}")
-
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден!")
 if not GEMINI_API_KEY:
